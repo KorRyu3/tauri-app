@@ -67,8 +67,7 @@ cargoとpnpmでパッケージをインストール
 pnpm install --frozen-lockfile
 
 # rustのパッケージをインストール
-cd src-tauri
-cargo install --path ./src-tauri
+cargo install --path ./src-tauri --locked
 ```
 
 プロジェクトの起動
