@@ -60,19 +60,21 @@ corepack enable pnpm
 pnpm -v
 ```
 
-cargoとpnpmでパッケージをインストール
+pnpmでパッケージをインストール
 
 ```bash
 # nodeのパッケージをインストール
 pnpm install --frozen-lockfile
 
-# rustのパッケージをインストール
-cargo install --path ./src-tauri --locked
+# cargoでtauri-cliをインストール
+# 多少時間がかかります
+cargo install tauri-cli
 ```
 
 プロジェクトの起動
 
 ```bash
+# cargoで起動
 cargo tauri dev
 ```
 
