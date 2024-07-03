@@ -5,6 +5,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 First, run the development server:
 
 ```bash
+cargo tauri dev
+# or
 npm run dev
 # or
 yarn dev
@@ -50,10 +52,26 @@ mise i
 
 Nodeとcorepack, pnpmをインストール
 
-```
+```bash
 volta install
 volta install corepack@0.28.2
 
 pnpm -v
 ```
 
+cargoとpnpmでパッケージをインストール
+
+```bash
+# nodeのパッケージをインストール
+pnpm install --frozen-lockfile
+
+# rustのパッケージをインストール
+cd src-tauri
+cargo install --locked
+```
+
+プロジェクトの起動
+
+```bash
+cargo tauri dev
+```
