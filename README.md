@@ -53,9 +53,10 @@ mise i
 Nodeとcorepack, pnpmをインストール
 
 ```bash
-volta install
+node -v
 volta install corepack@0.28.2
 
+corepack enable pnpm
 pnpm -v
 ```
 
@@ -67,7 +68,7 @@ pnpm install --frozen-lockfile
 
 # rustのパッケージをインストール
 cd src-tauri
-cargo install --locked
+cargo install --path ./src-tauri
 ```
 
 プロジェクトの起動
@@ -75,3 +76,8 @@ cargo install --locked
 ```bash
 cargo tauri dev
 ```
+
+## TODO
+
+- [ ] miseのインストール
+- [ ] voltaのインストール
