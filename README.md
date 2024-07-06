@@ -44,13 +44,50 @@ git clone git@github.com:KorRyu3/tauri-app.git
 cd tauri-app
 ```
 
-Rustをmiseでインストール
+### Rustをインストール
+
+#### rustupをインストール
+
+インストールオプションは「1」を選択してください
+
+##### mac
 
 ```bash
-mise i
+# rustupをインストール
+brew install rustup-init
+rustup-init
+
+# rustupの補完を設定
+rustup completions zsh > ~/.zfunc/_rustup
+echo "fpath+=~/.zfunc" >> ~/.zshrc
 ```
 
-Nodeとcorepack, pnpmをインストール
+##### windows
+
+```bash
+# rustupをインストール
+# TODO: 公式のインストーラーを使う場合について追記
+
+# rustupの補完を設定
+rustup completions powershell >> $PROFILE.CurrentUserCurrentHost
+```
+
+### voltaをインストール
+
+Nodeのランタイムバージョン管理ツール
+
+```bash
+# mac
+brew install volta
+
+# windows
+# 公式インストーラーを使いインストール
+# 下記サイトの「Windows Installation」を参考に
+# https://docs.volta.sh/guide/getting-started
+```
+
+
+#### Nodeとcorepack, pnpmをインストール
 
 ```bash
 node -v
@@ -58,27 +95,31 @@ volta install corepack@0.28.2
 
 corepack enable pnpm
 pnpm -v
-```
 
-pnpmでパッケージをインストール
-
-```bash
-# nodeのパッケージをインストール
+# pnpmでnodeのパッケージをインストール
 pnpm install --frozen-lockfile
-
-# cargoでtauri-cliをインストール
-# 多少時間がかかります
-cargo install tauri-cli
 ```
 
-プロジェクトの起動
+### 起動にcargoを使用する場合
+
+※ cargoを使って起動しない場合は、この手順は不要です
 
 ```bash
+# tauri-cliをグローバルにインストール
+# 多少時間がかかります
+cargo install tauri-cli --version 1.6.0
+```
+
+## プロジェクトの起動
+
+```bash
+# pnpmで起動
+pnpm tauri dev
+
 # cargoで起動
 cargo tauri dev
 ```
 
 ## TODO
 
-- [ ] miseのインストール
-- [ ] voltaのインストール
+- [ ] windowsのrustupのインストール手順を追記
