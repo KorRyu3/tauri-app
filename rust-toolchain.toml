@@ -1,0 +1,5 @@
+[toolchain]
+# Rustのバージョンを指定
+channel = "1.79.0"
+components = ["rust-analyzer"]
+profile = "default"
