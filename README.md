@@ -44,13 +44,15 @@ git clone git@github.com:KorRyu3/tauri-app.git
 cd tauri-app
 ```
 
-### Rustをインストール
+### rustupをインストール
 
-#### rustupをインストール
+Rust公式のツールチェーン管理ツール
 
-インストールオプションは「1」を選択してください
+インストールオプションが出たら、「**1**」を選択してください
 
-##### mac
+#### MacOS
+
+Homebrewを使ってインストール。その他の方法は、[公式サイト](https://www.rust-lang.org/ja/tools/install)を参照してください
 
 ```bash
 # rustupをインストール
@@ -62,11 +64,12 @@ rustup completions zsh > ~/.zfunc/_rustup
 echo "fpath+=~/.zfunc" >> ~/.zshrc
 ```
 
-##### windows
+#### Windows
 
 ```bash
 # rustupをインストール
-# TODO: 公式のインストーラーを使う場合について追記
+# 公式インストーラーを使いインストール
+# https://www.rust-lang.org/ja/tools/install
 
 # rustupの補完を設定
 rustup completions powershell >> $PROFILE.CurrentUserCurrentHost
@@ -76,24 +79,28 @@ rustup completions powershell >> $PROFILE.CurrentUserCurrentHost
 
 Nodeのランタイムバージョン管理ツール
 
+#### MacOS
+
 ```bash
 # mac
 brew install volta
-
-# windows
-# 公式インストーラーを使いインストール
-# 下記サイトの「Windows Installation」を参考に
-# https://docs.volta.sh/guide/getting-started
 ```
 
+#### Windows
 
-#### Nodeとcorepack, pnpmをインストール
+公式インストーラーを使いインストール
+
+[公式サイト](https://docs.volta.sh/guide/getting-started)の「Windows Installation」を参考に
+
+### Node, corepack, pnpmをインストール
+
+ここからのコマンドは、必ずトップディレクトリで実行してください
 
 ```bash
 node -v
 volta install corepack@0.28.2
 
-corepack enable pnpm
+# Yを選択
 pnpm -v
 
 # pnpmでnodeのパッケージをインストール
@@ -122,4 +129,4 @@ cargo tauri dev
 
 ## TODO
 
-- [ ] windowsのrustupのインストール手順を追記
+- [x] windowsのrustupのインストール手順を追記
