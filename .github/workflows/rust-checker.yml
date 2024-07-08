@@ -12,6 +12,8 @@ on:
       - opened
       - synchronize
       - reopened
+    paths:
+      - "**/*.rs"
 
   workflow_dispatch:
 
