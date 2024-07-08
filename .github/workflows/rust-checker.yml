@@ -35,7 +35,7 @@ jobs:
 
     - name: Set up dependencies
       run: |
-        echo "deb http://archive.ubuntu.com/ubuntu focal-updates main" >> /etc/apt/sources.list
+        sudo echo "deb http://archive.ubuntu.com/ubuntu focal-updates main" >> /etc/apt/sources.list
         sudo apt-get update
         sudo apt-get install -y libgtk-3-dev
 
