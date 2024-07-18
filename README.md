@@ -60,6 +60,7 @@ brew install rustup-init
 rustup-init
 
 # rustupの補完を設定
+mkdir ~/.zfunc
 rustup completions zsh > ~/.zfunc/_rustup
 echo "fpath+=~/.zfunc" >> ~/.zshrc
 ```
