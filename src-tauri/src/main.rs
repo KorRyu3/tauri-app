@@ -21,8 +21,8 @@ use async_openai::{
 };
 use dotenv::dotenv;
 
-
-fn main() {
+#[tokio::main]
+async fn main() {
     // 環境変数を読み込む
     dotenv().ok();
 
@@ -33,6 +33,16 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
+
+    // コンソールからGPTとの対話を行う
+    // 実行コマンド
+    // cd src-tauri && cargo run
+    // 下記はコメントアウト
+    // let mut input = String::new();
+    // println!("Please input your message: ");
+    // std::io::stdin().read_line(&mut input).unwrap();
+    // println!("response: {}", generate_response(input).await);
 
 }
 
