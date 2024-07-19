@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const Home = () => {
   const [input, setInput] = useState("");
@@ -7,7 +8,12 @@ const Home = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setOutput(input);
+    invoke("generate_response", { input })
+      .then((res) => {
+        // resの内容をoutputに設定
+        setOutput(JSON.stringify(res));
+      })
+      .catch((e) => console.error(e));
   };
 
   return (
