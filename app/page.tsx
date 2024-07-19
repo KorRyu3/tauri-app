@@ -16,6 +16,11 @@ const Home = () => {
       .catch((e) => console.error(e));
   };
 
+  const handleReset = () => {
+    setInput("");
+    setOutput("");
+  };
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
@@ -30,6 +35,13 @@ const Home = () => {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="ここに入力してください"
         />
+        <button
+          type="button"
+          onClick={handleReset}
+          className="mt-2 w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-300"
+        >
+          リセット
+        </button>
         <button
           type="submit"
           className="mt-2 w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
