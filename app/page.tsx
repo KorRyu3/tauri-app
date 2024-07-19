@@ -11,7 +11,7 @@ const Home = () => {
     invoke("generate_response", { input })
       .then((res) => {
         // resの内容をoutputに設定
-        setOutput(JSON.stringify(res));
+        setOutput(JSON.stringify(res).slice(1, -1));
       })
       .catch((e) => console.error(e));
   };
