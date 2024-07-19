@@ -26,6 +26,7 @@ async fn main() {
     // 環境変数を読み込む
     dotenv().ok();
 
+    // コンソールからGPTとの対話を行う時はコメントアウト
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             // commandで定義した関数を入れる
