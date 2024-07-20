@@ -4,20 +4,20 @@
 // Commandについて
 // https://tauri.app/v1/guides/features/command/
 
-extern crate dotenv;
 extern crate async_openai;
-extern crate tokio;
+extern crate dotenv;
 extern crate tauri;
+extern crate tokio;
 
 use std::env;
 
 use async_openai::{
-    Client,
     config::AzureConfig,
     types::{
         ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs
-    }
+        CreateChatCompletionRequestArgs,
+    },
+    Client,
 };
 use dotenv::dotenv;
 
@@ -48,7 +48,6 @@ deviation
 {今日のご飯について}
 ";
 
-
 #[tokio::main]
 async fn main() {
     // 環境変数を読み込む
@@ -63,7 +62,6 @@ async fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
-
     // コンソールからGPTとの対話を行う
     // 実行コマンド
     // cd src-tauri && cargo run
@@ -72,13 +70,10 @@ async fn main() {
     // println!("Please input your message: ");
     // std::io::stdin().read_line(&mut input).unwrap();
     // println!("response: {}", generate_response(input).await);
-
 }
-
 
 #[tauri::command]
 async fn generate_response(input: String) -> String {
-
     // AzureOpenAIの設定
     let config = AzureConfig::new()
         .with_api_base(env::var("AZURE_OPENAI_API_ENDPOINT").unwrap())
@@ -89,31 +84,26 @@ async fn generate_response(input: String) -> String {
     let client = Client::with_config(config);
 
     let request = CreateChatCompletionRequestArgs::default()
-    .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
-    .messages([
-        ChatCompletionRequestSystemMessageArgs::default()
-            .content(SYSTEM_PROMPT)
-            .build()
-            .unwrap()
-            .into(),
-        ChatCompletionRequestUserMessageArgs::default()
-            .content(input)
-            .build()
-            .unwrap()
-            .into(),
-    ])
-    .max_tokens(1024_u32)
-    .build()
-    .unwrap();
-
-    let response = client
-        .chat()
-        .create(request)
-        .await
+        .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
+        .messages([
+            ChatCompletionRequestSystemMessageArgs::default()
+                .content(SYSTEM_PROMPT)
+                .build()
+                .unwrap()
+                .into(),
+            ChatCompletionRequestUserMessageArgs::default()
+                .content(input)
+                .build()
+                .unwrap()
+                .into(),
+        ])
+        .max_tokens(1024_u32)
+        .build()
         .unwrap();
+
+    let response = client.chat().create(request).await.unwrap();
 
     // unwrapを使用する際に所有権が渡ってしまうため、cloneを使用してコピーを作成する
     // もしくは、as_refを使用して参照を渡してもよい
     response.choices[0].message.content.clone().unwrap()
-
 }
