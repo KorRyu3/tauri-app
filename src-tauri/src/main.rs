@@ -21,6 +21,34 @@ use async_openai::{
 };
 use dotenv::dotenv;
 
+// system prompt
+const SYSTEM_PROMPT: &str = "
+これから、入力として会議中の会話が与えられます。この会話の内容が、会議の本筋から逸脱(脱線)しているかどうかを判断しなさい。
+判定の出力形式は下記の通りです。
+
+- 会議の本筋から逸脱していない場合: continue
+- 会議の本筋から逸脱している場合: deviation
+
+## 例
+### 会議の本筋から逸脱していない場合
+#### 入力
+A: 今日の天気は晴れですね。
+B: はい、そうですね。
+#### 出力
+continue
+
+### 会議の本筋から逸脱している場合
+#### 入力
+A: 今日の天気は晴れですね。
+B: はい、そうですね。そういえば、昨日の夜、新しい映画を見ました。
+#### 出力
+deviation
+
+## 会議の本筋
+{今日のご飯について}
+";
+
+
 #[tokio::main]
 async fn main() {
     // 環境変数を読み込む
@@ -59,9 +87,6 @@ async fn generate_response(input: String) -> String {
         .with_api_key(env::var("AZURE_OPENAI_API_KEY").unwrap());
 
     let client = Client::with_config(config);
-
-    // system prompt
-    const SYSTEM_PROMPT: &str = "You are a helpful assistant.";
 
     let request = CreateChatCompletionRequestArgs::default()
     .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
