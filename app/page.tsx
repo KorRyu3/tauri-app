@@ -31,13 +31,24 @@ const Home = () => {
     checkNotificationPermission();
   }, []);
 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    invoke("generate_response", { input })
-      .then((res) => {
-        // resの内容をoutputに設定
-        setOutput(JSON.stringify(res).slice(1, -1));
-      })
-      .catch((e) => console.error(e));
+    try {
+      const res = await invoke("generate_response", { input });
+      if (res !== "deviation") return;
+
+      if (!permissionGranted) {
+        setOutput("通知を出すための権限がありません。");
+        return;
+      }
+
+      sendNotification({
+        title: "お知らせ",
+        body: "設定された話題内容から脱線しています！",
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleReset = () => {
