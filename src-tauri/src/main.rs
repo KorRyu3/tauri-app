@@ -76,27 +76,32 @@ async fn generate_response(input: String, main_topic: String) -> String {
         main_topic=main_topic
     );
 
-    let request = CreateChatCompletionRequestArgs::default()
-        .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
-        .messages([
-            ChatCompletionRequestSystemMessageArgs::default()
-                .content(system_prompt)
-                .build()
-                .unwrap()
-                .into(),
-            ChatCompletionRequestUserMessageArgs::default()
-                .content(input)
-                .build()
-                .unwrap()
-                .into(),
-        ])
-        .max_tokens(1024_u32)
-        .build()
-        .unwrap();
+    let request = create_completion_request(input, system_prompt);
 
     let response = client.chat().create(request).await.unwrap();
 
     // unwrapを使用する際に所有権が渡ってしまうため、cloneを使用してコピーを作成する
     // もしくは、as_refを使用して参照を渡してもよい
     response.choices[0].message.content.clone().unwrap()
+}
+
+
+fn create_completion_request(input: String, system_prompt: String) -> CreateChatCompletionRequest {
+    CreateChatCompletionRequestArgs::default()
+    .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
+    .messages([
+        ChatCompletionRequestSystemMessageArgs::default()
+            .content(system_prompt)
+            .build()
+            .unwrap()
+            .into(),
+        ChatCompletionRequestUserMessageArgs::default()
+            .content(input)
+            .build()
+            .unwrap()
+            .into(),
+    ])
+    .max_tokens(1024_u32)
+    .build()
+    .unwrap()
 }
