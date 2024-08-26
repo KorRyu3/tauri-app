@@ -15,38 +15,12 @@ use async_openai::{
     config::AzureConfig,
     types::{
         ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs,
+        CreateChatCompletionRequestArgs, CreateChatCompletionRequest
     },
     Client,
 };
 use dotenv::dotenv;
 
-// system prompt
-const SYSTEM_PROMPT: &str = "
-これから、入力として会議中の会話が与えられます。この会話の内容が、会議の本筋から逸脱(脱線)しているかどうかを判断しなさい。
-判定の出力形式は下記の通りです。
-
-- 会議の本筋から逸脱していない場合: continue
-- 会議の本筋から逸脱している場合: deviation
-
-## 例
-### 会議の本筋から逸脱していない場合
-#### 入力
-A: 今日の天気は晴れですね。
-B: はい、そうですね。
-#### 出力
-continue
-
-### 会議の本筋から逸脱している場合
-#### 入力
-A: 今日の天気は晴れですね。
-B: はい、そうですね。そういえば、昨日の夜、新しい映画を見ました。
-#### 出力
-deviation
-
-## 会議の本筋
-{今日のご飯について}
-";
 
 #[tokio::main]
 async fn main() {
@@ -63,8 +37,9 @@ async fn main() {
         .expect("error while running tauri application");
 }
 
+
 #[tauri::command]
-async fn generate_response(input: String) -> String {
+async fn generate_response(input: String, main_topic: String) -> String {
     // AzureOpenAIの設定
     let config = AzureConfig::new()
         .with_api_base(env::var("AZURE_OPENAI_API_ENDPOINT").unwrap())
@@ -74,11 +49,38 @@ async fn generate_response(input: String) -> String {
 
     let client = Client::with_config(config);
 
+    let system_prompt = format!(
+        "これから、入力として会議中の会話が与えられます。この会話の内容が、会議の本筋から逸脱(脱線)しているかどうかを判断しなさい。
+        判定の出力形式は下記の通りです。
+
+        - 会議の本筋から逸脱していない場合: continue
+        - 会議の本筋から逸脱している場合: deviation
+
+        ## 例
+        ### 会議の本筋から逸脱していない場合
+        #### 入力
+        A: 今日の天気は晴れですね。
+        B: はい、そうですね。
+        #### 出力
+        continue
+
+        ### 会議の本筋から逸脱している場合
+        #### 入力
+        A: 今日の天気は晴れですね。
+        B: はい、そうですね。そういえば、昨日の夜、新しい映画を見ました。
+        #### 出力
+        deviation
+
+        ## 会議の本筋
+        {main_topic}",
+        main_topic=main_topic
+    );
+
     let request = CreateChatCompletionRequestArgs::default()
         .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
         .messages([
             ChatCompletionRequestSystemMessageArgs::default()
-                .content(SYSTEM_PROMPT)
+                .content(system_prompt)
                 .build()
                 .unwrap()
                 .into(),
