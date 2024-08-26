@@ -1,6 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
 
 const Home = () => {
   const [input, setInput] = useState("");
