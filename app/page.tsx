@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import {
   isPermissionGranted,
@@ -10,8 +10,27 @@ import {
 const Home = () => {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [permissionGranted, setPermissionGranted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // アプリを起動した時に、通知の許可設定がされているかどうかの確認
+  useEffect(() => {
+    const checkNotificationPermission = async () => {
+      // 非同期処理で、権限の確認
+      let permissionGranted = await isPermissionGranted();
+
+      // 権限が許可されていなかった時の処理
+      if (!permissionGranted) {
+        const permission = await requestPermission();
+        permissionGranted = permission === "granted";
+      }
+
+      // 権限が許可されていれば、useStateをtrueに変更
+      setPermissionGranted(permissionGranted);
+    };
+
+    checkNotificationPermission();
+  }, []);
+
     e.preventDefault();
     invoke("generate_response", { input })
       .then((res) => {
