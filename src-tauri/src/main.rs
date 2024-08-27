@@ -88,7 +88,8 @@ async fn generate_response(input: String) -> String {
 
     let response = client.chat().create(request).await.unwrap();
 
-    // clone/as_refを付けないと、Vec<ChatChoice>の要素が無効化されるエラー?が起きる可能性があるからコンパイルエラーになるらしい
+    // clone/as_refをつけている理由
+    // これを付けないと、Vec<ChatChoice>の要素が無効化されるエラー?が起きる可能性があるからコンパイルエラーになるらしい
     response.choices[0].message.content.clone().unwrap()
 }
 
