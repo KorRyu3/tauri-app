@@ -94,8 +94,7 @@ async fn generate_response(input: String) -> String {
 
     let response = client.chat().create(request).await.unwrap();
 
-    // unwrapを使用する際に所有権が渡ってしまうため、cloneを使用してコピーを作成する
-    // もしくは、as_refを使用して参照を渡してもよい
+    // clone/as_refを付けないと、Vec<ChatChoice>の要素が無効化されるエラー?が起きる可能性があるからコンパイルエラーになるらしい
     response.choices[0].message.content.clone().unwrap()
 }
 
