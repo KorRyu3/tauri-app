@@ -16,16 +16,14 @@ use async_openai::{
     config::AzureConfig,
     types::{
         ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs, CreateChatCompletionRequest
+        CreateChatCompletionRequest, CreateChatCompletionRequestArgs,
     },
     Client,
 };
 use dotenv::dotenv;
 
-
 // グローバル変数を扱いやすくする
 static SYSTEM_PROMPT: OnceLock<String> = OnceLock::new();
-
 
 #[tokio::main]
 async fn main() {
@@ -35,13 +33,12 @@ async fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             // commandで定義した関数を入れる
-            set_system_prompt,  // 一度だけ呼ばれる
+            set_system_prompt, // 一度だけ呼ばれる
             generate_response
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
 
 #[tauri::command]
 async fn set_system_prompt(main_topic: String) {
@@ -75,7 +72,6 @@ async fn set_system_prompt(main_topic: String) {
     SYSTEM_PROMPT.set(system_prompt).unwrap();
 }
 
-
 #[tauri::command]
 async fn generate_response(input: String) -> String {
     let config = AzureConfig::new()
@@ -96,23 +92,22 @@ async fn generate_response(input: String) -> String {
     response.choices[0].message.content.clone().unwrap()
 }
 
-
 fn create_completion_request(input: String, system_prompt: String) -> CreateChatCompletionRequest {
     CreateChatCompletionRequestArgs::default()
-    .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
-    .messages([
-        ChatCompletionRequestSystemMessageArgs::default()
-            .content(system_prompt)
-            .build()
-            .unwrap()
-            .into(),
-        ChatCompletionRequestUserMessageArgs::default()
-            .content(input)
-            .build()
-            .unwrap()
-            .into(),
-    ])
-    .max_tokens(1024_u32)
-    .build()
-    .unwrap()
+        .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
+        .messages([
+            ChatCompletionRequestSystemMessageArgs::default()
+                .content(system_prompt)
+                .build()
+                .unwrap()
+                .into(),
+            ChatCompletionRequestUserMessageArgs::default()
+                .content(input)
+                .build()
+                .unwrap()
+                .into(),
+        ])
+        .max_tokens(1024_u32)
+        .build()
+        .unwrap()
 }
