@@ -32,7 +32,6 @@ async fn main() {
     // 環境変数を読み込む
     dotenv().ok();
 
-    // コンソールからGPTとの対話を行う時はコメントアウト
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             // commandで定義した関数を入れる
@@ -79,7 +78,6 @@ async fn set_system_prompt(main_topic: String) {
 
 #[tauri::command]
 async fn generate_response(input: String) -> String {
-    // AzureOpenAIの設定
     let config = AzureConfig::new()
         .with_api_base(env::var("AZURE_OPENAI_API_ENDPOINT").unwrap())
         .with_api_version("2024-02-01")
