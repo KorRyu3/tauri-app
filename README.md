@@ -88,7 +88,3 @@ pnpm tauri dev
 # cargoで起動
 cargo tauri dev
 ```
-
-## TODO
-
-- [x] windowsのrustupのインストール手順を追記
