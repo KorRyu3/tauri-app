@@ -1,19 +1,54 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
 
 const Home = () => {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [permissionGranted, setPermissionGranted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // アプリを起動した時に、通知の許可設定がされているかどうかの確認
+  useEffect(() => {
+    const checkNotificationPermission = async () => {
+      // 非同期処理で、権限の確認
+      let permissionGranted = await isPermissionGranted();
+
+      // 権限が許可されていなかった時の処理
+      if (!permissionGranted) {
+        const permission = await requestPermission();
+        permissionGranted = permission === "granted";
+      }
+
+      // 権限が許可されていれば、useStateをtrueに変更
+      setPermissionGranted(permissionGranted);
+    };
+
+    checkNotificationPermission();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    invoke("generate_response", { input })
-      .then((res) => {
-        // resの内容をoutputに設定
-        setOutput(JSON.stringify(res).slice(1, -1));
-      })
-      .catch((e) => console.error(e));
+    try {
+      const res = await invoke("generate_response", { input });
+      if (res !== "deviation") return;
+
+      if (!permissionGranted) {
+        setOutput("通知を出すための権限がありません。");
+        return;
+      }
+
+      sendNotification({
+        title: "お知らせ",
+        body: "設定された話題内容から脱線しています！",
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleReset = () => {
