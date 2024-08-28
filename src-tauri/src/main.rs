@@ -76,8 +76,6 @@ async fn set_system_prompt(main_topic: String) {
         system_prompt.clear();
         system_prompt.push_str(prompt.as_str());
     }).join().expect("Thread panicked");
-
-    println!("SYSTEM_PROMPT: {:?}", SYSTEM_PROMPT);
 }
 
 #[tauri::command]
