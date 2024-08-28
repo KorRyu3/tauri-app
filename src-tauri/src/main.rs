@@ -10,8 +10,8 @@ extern crate tauri;
 extern crate tokio;
 
 use std::env;
-use std::thread;
 use std::sync::Mutex;
+use std::thread;
 
 use async_openai::{
     config::AzureConfig,
@@ -75,7 +75,9 @@ async fn set_system_prompt(main_topic: String) {
         let mut system_prompt = SYSTEM_PROMPT.lock().unwrap();
         system_prompt.clear();
         system_prompt.push_str(prompt.as_str());
-    }).join().expect("Thread panicked");
+    })
+    .join()
+    .expect("Thread panicked");
 }
 
 #[tauri::command]
