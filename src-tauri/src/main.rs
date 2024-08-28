@@ -10,7 +10,8 @@ extern crate tauri;
 extern crate tokio;
 
 use std::env;
-use std::sync::OnceLock;
+use std::thread;
+use std::sync::Mutex;
 
 use async_openai::{
     config::AzureConfig,
@@ -23,7 +24,7 @@ use async_openai::{
 use dotenv::dotenv;
 
 // グローバル変数を扱いやすくする
-static SYSTEM_PROMPT: OnceLock<String> = OnceLock::new();
+static SYSTEM_PROMPT: Mutex<String> = Mutex::new(String::new());
 
 #[tokio::main]
 async fn main() {
@@ -42,7 +43,7 @@ async fn main() {
 
 #[tauri::command]
 async fn set_system_prompt(main_topic: String) {
-    let system_prompt = format!(
+    let prompt = format!(
         "これから、入力として会議中の会話が与えられます。この会話の内容が会議の議題から逸れているかどうかを判断しなさい。
         判定の出力形式は下記の通りです。
 
@@ -69,7 +70,14 @@ async fn set_system_prompt(main_topic: String) {
         main_topic=main_topic
     );
 
-    SYSTEM_PROMPT.set(system_prompt).unwrap();
+    // スレッドセーフでグローバル変数(SYSTEM_PROMPT)を編集する
+    thread::spawn(move || {
+        let mut system_prompt = SYSTEM_PROMPT.lock().unwrap();
+        system_prompt.clear();
+        system_prompt.push_str(prompt.as_str());
+    }).join().expect("Thread panicked");
+
+    println!("SYSTEM_PROMPT: {:?}", SYSTEM_PROMPT);
 }
 
 #[tauri::command]
@@ -82,7 +90,7 @@ async fn generate_response(input: String) -> String {
 
     let client = Client::with_config(config);
 
-    let system_prompt = SYSTEM_PROMPT.get().unwrap().clone();
+    let system_prompt = SYSTEM_PROMPT.lock().unwrap().to_string();
 
     let request = create_completion_request(input, system_prompt);
 
