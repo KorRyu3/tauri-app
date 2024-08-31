@@ -10,53 +10,31 @@ extern crate tauri;
 extern crate tokio;
 
 use std::env;
+use std::sync::Mutex;
+use std::thread;
 
 use async_openai::{
     config::AzureConfig,
     types::{
         ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs,
+        CreateChatCompletionRequest, CreateChatCompletionRequestArgs,
     },
     Client,
 };
 use dotenv::dotenv;
 
-// system prompt
-const SYSTEM_PROMPT: &str = "
-これから、入力として会議中の会話が与えられます。この会話の内容が、会議の本筋から逸脱(脱線)しているかどうかを判断しなさい。
-判定の出力形式は下記の通りです。
-
-- 会議の本筋から逸脱していない場合: continue
-- 会議の本筋から逸脱している場合: deviation
-
-## 例
-### 会議の本筋から逸脱していない場合
-#### 入力
-A: 今日の天気は晴れですね。
-B: はい、そうですね。
-#### 出力
-continue
-
-### 会議の本筋から逸脱している場合
-#### 入力
-A: 今日の天気は晴れですね。
-B: はい、そうですね。そういえば、昨日の夜、新しい映画を見ました。
-#### 出力
-deviation
-
-## 会議の本筋
-{今日のご飯について}
-";
+// グローバル変数を扱いやすくする
+static SYSTEM_PROMPT: Mutex<String> = Mutex::new(String::new());
 
 #[tokio::main]
 async fn main() {
     // 環境変数を読み込む
     dotenv().ok();
 
-    // コンソールからGPTとの対話を行う時はコメントアウト
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             // commandで定義した関数を入れる
+            set_system_prompt, // 一度だけ呼ばれる
             generate_response
         ])
         .run(tauri::generate_context!())
@@ -64,8 +42,46 @@ async fn main() {
 }
 
 #[tauri::command]
+async fn set_system_prompt(main_topic: String) {
+    let prompt = format!(
+        "これから、入力として会議中の会話が与えられます。この会話の内容が会議の議題から逸れているかどうかを判断しなさい。
+        判定の出力形式は下記の通りです。
+
+        - 議題から逸れている場合: deviation
+        - 議題から逸れていない場合: continue
+
+        ## 例
+        ### 議題から逸れていない場合
+        #### 入力
+        A: 今日の天気は晴れですね。
+        B: いい天気ですよね。
+        #### 出力
+        continue
+
+        ### 議題から逸れている場合
+        #### 入力
+        A: 今日の天気は晴れですね。
+        B: いい天気ですよね。昨日の夜は遅くまで仕事をしていました。
+        #### 出力
+        deviation
+
+        ## 議題
+        {main_topic}",
+        main_topic=main_topic
+    );
+
+    // スレッドセーフでグローバル変数(SYSTEM_PROMPT)を編集する
+    thread::spawn(move || {
+        let mut system_prompt = SYSTEM_PROMPT.lock().unwrap();
+        system_prompt.clear();
+        system_prompt.push_str(prompt.as_str());
+    })
+    .join()
+    .expect("Thread panicked");
+}
+
+#[tauri::command]
 async fn generate_response(input: String) -> String {
-    // AzureOpenAIの設定
     let config = AzureConfig::new()
         .with_api_base(env::var("AZURE_OPENAI_API_ENDPOINT").unwrap())
         .with_api_version("2024-02-01")
@@ -74,11 +90,23 @@ async fn generate_response(input: String) -> String {
 
     let client = Client::with_config(config);
 
-    let request = CreateChatCompletionRequestArgs::default()
+    let system_prompt = SYSTEM_PROMPT.lock().unwrap().to_string();
+
+    let request = create_completion_request(input, system_prompt);
+
+    let response = client.chat().create(request).await.unwrap();
+
+    // clone/as_refをつけている理由
+    // これを付けないと、Vec<ChatChoice>の要素が無効化されるエラー?が起きる可能性があるからコンパイルエラーになるらしい
+    response.choices[0].message.content.clone().unwrap()
+}
+
+fn create_completion_request(input: String, system_prompt: String) -> CreateChatCompletionRequest {
+    CreateChatCompletionRequestArgs::default()
         .model(env::var("AZURE_OPENAI_API_GPT_DEPLOYMENT").unwrap())
         .messages([
             ChatCompletionRequestSystemMessageArgs::default()
-                .content(SYSTEM_PROMPT)
+                .content(system_prompt)
                 .build()
                 .unwrap()
                 .into(),
@@ -90,11 +118,5 @@ async fn generate_response(input: String) -> String {
         ])
         .max_tokens(1024_u32)
         .build()
-        .unwrap();
-
-    let response = client.chat().create(request).await.unwrap();
-
-    // unwrapを使用する際に所有権が渡ってしまうため、cloneを使用してコピーを作成する
-    // もしくは、as_refを使用して参照を渡してもよい
-    response.choices[0].message.content.clone().unwrap()
+        .unwrap()
 }

@@ -9,7 +9,7 @@ import {
 
 const Home = () => {
   const [input, setInput] = useState("");
-  const [output, setOutput] = useState("");
+  const [mainTopic, setMainTopic] = useState("");
   const [permissionGranted, setPermissionGranted] = useState(false);
 
   // アプリを起動した時に、通知の許可設定がされているかどうかの確認
@@ -31,6 +31,18 @@ const Home = () => {
     checkNotificationPermission();
   }, []);
 
+  useEffect(() => {
+    const initializeSystemPrompt = async () => {
+      try {
+        await invoke("set_system_prompt", { mainTopic: "デフォルトの議題" });
+      } catch (error) {
+        console.error("Failed to set system prompt:", error);
+      }
+    };
+
+    initializeSystemPrompt();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -38,7 +50,6 @@ const Home = () => {
       if (res !== "deviation") return;
 
       if (!permissionGranted) {
-        setOutput("通知を出すための権限がありません。");
         return;
       }
 
@@ -53,7 +64,6 @@ const Home = () => {
 
   const handleReset = () => {
     setInput("");
-    setOutput("");
   };
 
   return (
@@ -61,7 +71,29 @@ const Home = () => {
       <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
         シンプル入出力UI
       </h1>
-
+      <div className="mb-4">
+        <input
+          type="text"
+          value={mainTopic}
+          onChange={(e) => setMainTopic(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="議題を入力してください"
+        />
+        <button
+          onClick={async () => {
+            try {
+              await invoke("set_system_prompt", { mainTopic });
+              alert("議題が設定されました");
+            } catch (error) {
+              console.error("Failed to set system prompt:", error);
+              alert("議題の設定に失敗しました");
+            }
+          }}
+          className="mt-2 w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300"
+        >
+          議題を設定
+        </button>
+      </div>
       <form onSubmit={handleSubmit} className="mb-4">
         <input
           type="text"
@@ -84,13 +116,6 @@ const Home = () => {
           送信
         </button>
       </form>
-
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-2 text-gray-700">出力:</h2>
-        <div className="p-3 bg-gray-100 rounded-md min-h-[50px]">
-          {output || "出力がここに表示されます"}
-        </div>
-      </div>
     </div>
   );
 };
